@@ -1,4 +1,8 @@
 const serverless = require('serverless-http');
-const app = require('../../dist/server.js');
+const { OMSSServer } = require('@omss/framework');
+
+// Importar o servidor
+const server = new OMSSServer();
+const app = server.app;
 
 exports.handler = serverless(app);

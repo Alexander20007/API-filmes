@@ -4,21 +4,12 @@
   "description": "OMSS Backend Server - CinePro",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsup src/*.ts --minify --clean --sourcemap --target node18 --format esm,cjs --out-dir dist --platform node --external axios",
+    "build": "tsup src/server.ts --minify --clean --sourcemap --target node18 --format esm,cjs --out-dir dist --platform node --external axios --external @omss/framework",
     "build:netlify": "npm run build",
     "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js",
-    "test": "vitest",
-    "lint": "eslint src/**/*.ts",
-    "format": "prettier --write ."
+    "start": "node dist/server.js"
   },
   "type": "module",
-  "exports": {
-    ".": {
-      "import": "./dist/server.js",
-      "require": "./dist/server.cjs"
-    }
-  },
   "keywords": [
     "omss",
     "cinepro",
@@ -30,6 +21,7 @@
   "author": "CinePro Team",
   "license": "MIT",
   "dependencies": {
+    "@omss/framework": "^1.0.0",
     "axios": "^1.6.8",
     "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
