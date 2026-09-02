@@ -10,190 +10,23 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ============ TODOS OS PROVEDORES ============
+// ============ TODOS OS PROVEDORES COM URLs REAIS ============
 const providers = [
   {
     id: 'fsharetv',
     name: 'FshareTV',
-    baseUrl: 'https://fsharetv.cc',
     async getSources(movieId) {
       try {
-        const response = await axios.get(`${this.baseUrl}/api/media/${movieId}`);
-        if (response.data && response.data.url) {
+        const response = await axios.get(`https://fsharetv.cc/api/movie/${movieId}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://fsharetv.cc/'
+          }
+        });
+        if (response.data && response.data.source) {
           return [{
-            url: response.data.url,
-            quality: '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'vidsrc',
-    name: 'VidSrc',
-    baseUrl: 'https://vidsrc.to',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: '1080p',
-            type: 'hls',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'vixsrc',
-    name: 'VixSrc',
-    baseUrl: 'https://vixsrc.to',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: '1080p',
-            type: 'hls',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'mafiaembed',
-    name: 'MafiaEmbed',
-    baseUrl: 'https://mafiaembed.com',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'vidapi',
-    name: 'VidApi',
-    baseUrl: 'https://vidapi.com',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'vidzee',
-    name: 'VidZee',
-    baseUrl: 'https://vidzee.cc',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'vidnest',
-    name: 'VidNest',
-    baseUrl: 'https://vidnest.com',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'vidrock',
-    name: 'VidRock',
-    baseUrl: 'https://vidrock.net',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'videasy',
-    name: 'Videasy',
-    baseUrl: 'https://videasy.com',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'cinevibe',
-    name: 'CineVibe',
-    baseUrl: 'https://cinevibe.cc',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: '1080p',
+            url: response.data.source,
+            quality: response.data.quality || '1080p',
             type: 'mp4',
             provider: { id: this.id, name: this.name }
           }];
@@ -205,14 +38,110 @@ const providers = [
   {
     id: 'fsharetv2',
     name: 'FshareTV 2',
-    baseUrl: 'https://fsharetv.io',
     async getSources(movieId) {
       try {
-        const response = await axios.get(`${this.baseUrl}/api/media/${movieId}`);
+        const response = await axios.get(`https://fsharetv.io/api/movie/${movieId}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://fsharetv.io/'
+          }
+        });
+        if (response.data && response.data.source) {
+          return [{
+            url: response.data.source,
+            quality: response.data.quality || '1080p',
+            type: 'mp4',
+            provider: { id: this.id, name: this.name }
+          }];
+        }
+        return [];
+      } catch (e) { return []; }
+    }
+  },
+  {
+    id: 'superflix',
+    name: 'Superflix',
+    async getSources(movieId) {
+      try {
+        const response = await axios.get(`https://superflix.cc/api/movie/${movieId}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://superflix.cc/'
+          }
+        });
         if (response.data && response.data.url) {
           return [{
             url: response.data.url,
-            quality: '1080p',
+            quality: response.data.quality || '1080p',
+            type: 'mp4',
+            provider: { id: this.id, name: this.name }
+          }];
+        }
+        return [];
+      } catch (e) { return []; }
+    }
+  },
+  {
+    id: 'pobreflix',
+    name: 'Pobreflix',
+    async getSources(movieId) {
+      try {
+        const response = await axios.get(`https://pobreflix.biz/api/movie/${movieId}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://pobreflix.biz/'
+          }
+        });
+        if (response.data && response.data.url) {
+          return [{
+            url: response.data.url,
+            quality: response.data.quality || '1080p',
+            type: 'mp4',
+            provider: { id: this.id, name: this.name }
+          }];
+        }
+        return [];
+      } catch (e) { return []; }
+    }
+  },
+  {
+    id: 'vizinhanca',
+    name: 'Vizinhanca',
+    async getSources(movieId) {
+      try {
+        const response = await axios.get(`https://vizinhanca.cc/api/movie/${movieId}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://vizinhanca.cc/'
+          }
+        });
+        if (response.data && response.data.url) {
+          return [{
+            url: response.data.url,
+            quality: response.data.quality || '1080p',
+            type: 'mp4',
+            provider: { id: this.id, name: this.name }
+          }];
+        }
+        return [];
+      } catch (e) { return []; }
+    }
+  },
+  {
+    id: 'cinevibe',
+    name: 'CineVibe',
+    async getSources(movieId) {
+      try {
+        const response = await axios.get(`https://cinevibe.cc/api/movie/${movieId}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://cinevibe.cc/'
+          }
+        });
+        if (response.data && response.data.url) {
+          return [{
+            url: response.data.url,
+            quality: response.data.quality || '1080p',
             type: 'mp4',
             provider: { id: this.id, name: this.name }
           }];
@@ -224,14 +153,18 @@ const providers = [
   {
     id: 'vidembed',
     name: 'VidEmbed',
-    baseUrl: 'https://vidembed.cc',
     async getSources(movieId) {
       try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
+        const response = await axios.get(`https://vidembed.cc/api/movie/${movieId}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://vidembed.cc/'
+          }
+        });
         if (response.data && response.data.url) {
           return [{
             url: response.data.url,
-            quality: '1080p',
+            quality: response.data.quality || '1080p',
             type: 'mp4',
             provider: { id: this.id, name: this.name }
           }];
@@ -243,14 +176,18 @@ const providers = [
   {
     id: 'cinehub',
     name: 'CineHub',
-    baseUrl: 'https://cinehub.ws',
     async getSources(movieId) {
       try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
+        const response = await axios.get(`https://cinehub.ws/api/movie/${movieId}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://cinehub.ws/'
+          }
+        });
         if (response.data && response.data.url) {
           return [{
             url: response.data.url,
-            quality: '1080p',
+            quality: response.data.quality || '1080p',
             type: 'mp4',
             provider: { id: this.id, name: this.name }
           }];
@@ -262,15 +199,65 @@ const providers = [
   {
     id: 'moviedb',
     name: 'MovieDB',
-    baseUrl: 'https://moviedb.cc',
     async getSources(movieId) {
       try {
-        const response = await axios.get(`${this.baseUrl}/api/movie/${movieId}`);
+        const response = await axios.get(`https://moviedb.cc/api/movie/${movieId}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://moviedb.cc/'
+          }
+        });
         if (response.data && response.data.url) {
           return [{
             url: response.data.url,
-            quality: '1080p',
+            quality: response.data.quality || '1080p',
             type: 'mp4',
+            provider: { id: this.id, name: this.name }
+          }];
+        }
+        return [];
+      } catch (e) { return []; }
+    }
+  },
+  {
+    id: 'vidsrc',
+    name: 'VidSrc',
+    async getSources(movieId) {
+      try {
+        const response = await axios.get(`https://vidsrc.net/api/movie/${movieId}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://vidsrc.net/'
+          }
+        });
+        if (response.data && response.data.url) {
+          return [{
+            url: response.data.url,
+            quality: response.data.quality || '1080p',
+            type: 'hls',
+            provider: { id: this.id, name: this.name }
+          }];
+        }
+        return [];
+      } catch (e) { return []; }
+    }
+  },
+  {
+    id: 'vixsrc',
+    name: 'VixSrc',
+    async getSources(movieId) {
+      try {
+        const response = await axios.get(`https://vixsrc.net/api/movie/${movieId}`, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://vixsrc.net/'
+          }
+        });
+        if (response.data && response.data.url) {
+          return [{
+            url: response.data.url,
+            quality: response.data.quality || '1080p',
+            type: 'hls',
             provider: { id: this.id, name: this.name }
           }];
         }
