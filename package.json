@@ -39,6 +39,7 @@
     "node-cache": "^5.1.2",
     "serverless-http": "^3.2.0",
     "stremio-addon-sdk": "^1.0.0",
+    "tsup": "^8.0.2",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -50,7 +51,6 @@
     "@typescript-eslint/parser": "^7.6.0",
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
-    "tsup": "^8.0.2",
     "tsx": "^4.10.2",
     "typescript": "^5.4.5",
     "vitest": "^1.5.0"
