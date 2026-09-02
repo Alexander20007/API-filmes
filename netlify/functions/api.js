@@ -4,32 +4,23 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const axios = require('axios');
 
-// Carregar variáveis de ambiente
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ============ VERIFICAR CHAVE ============
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 
-console.log('🔑 TMDB_API_KEY configurada:', TMDB_API_KEY ? '✅ Sim' : '❌ Não');
-console.log('🔑 TMDB_API_KEY:', TMDB_API_KEY ? TMDB_API_KEY.substring(0, 10) + '...' : 'não definida');
+console.log('🔑 TMDB_API_KEY:', TMDB_API_KEY ? '✅ Configurada' : '❌ Não configurada');
 
 // ============ PROVEDORES ============
 const providers = [
   {
     id: 'tmdb',
-    name: 'TMDB',
+    name: 'TMDB Info',
     async getSources(movieId) {
-      if (!TMDB_API_KEY) {
-        console.error('❌ TMDB_API_KEY não está definida!');
-        return [];
-      }
-      
       try {
-        console.log(`📡 Buscando filme ${movieId} no TMDB...`);
         const response = await axios.get(
           `https://api.themoviedb.org/3/movie/${movieId}`,
           {
@@ -43,7 +34,6 @@ const providers = [
         );
         
         if (response.data) {
-          console.log(`✅ Filme encontrado: ${response.data.title}`);
           return [{
             url: `https://www.themoviedb.org/movie/${movieId}`,
             quality: '1080p',
@@ -53,14 +43,12 @@ const providers = [
               title: response.data.title,
               overview: response.data.overview,
               poster: `https://image.tmdb.org/t/p/w500${response.data.poster_path}`,
-              release_date: response.data.release_date,
-              vote_average: response.data.vote_average
+              release_date: response.data.release_date
             }
           }];
         }
         return [];
       } catch (e) {
-        console.error(`❌ Erro TMDB: ${e.message}`);
         return [];
       }
     }
@@ -69,14 +57,11 @@ const providers = [
     id: 'youtube',
     name: 'YouTube Trailers',
     async getSources(movieId) {
-      if (!TMDB_API_KEY) return [];
-      
       try {
         const response = await axios.get(
           `https://api.themoviedb.org/3/movie/${movieId}/videos`,
           {
-            params: { api_key: TMDB_API_KEY },
-            timeout: 10000
+            params: { api_key: TMDB_API_KEY }
           }
         );
         
@@ -90,11 +75,191 @@ const providers = [
               quality: '1080p',
               type: 'embed',
               provider: { id: this.id, name: this.name },
-              metadata: { title: 'Trailer', key: trailer.key }
+              metadata: { title: 'Trailer' }
             }];
           }
         }
         return [];
+      } catch (e) {
+        return [];
+      }
+    }
+  },
+  // ============ FILMES COMPLETOS ============
+  {
+    id: 'superflix',
+    name: 'Superflix (Filme Completo)',
+    async getSources(movieId) {
+      try {
+        const tmdbResponse = await axios.get(
+          `https://api.themoviedb.org/3/movie/${movieId}`,
+          {
+            params: {
+              api_key: TMDB_API_KEY
+            }
+          }
+        );
+        
+        const title = tmdbResponse.data.title;
+        const year = tmdbResponse.data.release_date?.split('-')[0] || '';
+        
+        // Gerar link do Superflix
+        const url = `https://superflix.cc/${title.replace(/ /g, '-').toLowerCase()}-${year}`;
+        
+        return [{
+          url: url,
+          quality: '1080p',
+          type: 'movie',
+          provider: { id: this.id, name: this.name },
+          metadata: {
+            title: title,
+            year: year,
+            note: '✅ Clique para assistir o filme completo!'
+          }
+        }];
+      } catch (e) {
+        return [];
+      }
+    }
+  },
+  {
+    id: 'pobreflix',
+    name: 'Pobreflix (Filme Completo)',
+    async getSources(movieId) {
+      try {
+        const tmdbResponse = await axios.get(
+          `https://api.themoviedb.org/3/movie/${movieId}`,
+          {
+            params: {
+              api_key: TMDB_API_KEY
+            }
+          }
+        );
+        
+        const title = tmdbResponse.data.title;
+        const year = tmdbResponse.data.release_date?.split('-')[0] || '';
+        
+        const url = `https://pobreflix.biz/${title.replace(/ /g, '-').toLowerCase()}-${year}`;
+        
+        return [{
+          url: url,
+          quality: '1080p',
+          type: 'movie',
+          provider: { id: this.id, name: this.name },
+          metadata: {
+            title: title,
+            year: year,
+            note: '✅ Clique para assistir o filme completo!'
+          }
+        }];
+      } catch (e) {
+        return [];
+      }
+    }
+  },
+  {
+    id: 'vizinhanca',
+    name: 'Vizinhanca (Filme Completo)',
+    async getSources(movieId) {
+      try {
+        const tmdbResponse = await axios.get(
+          `https://api.themoviedb.org/3/movie/${movieId}`,
+          {
+            params: {
+              api_key: TMDB_API_KEY
+            }
+          }
+        );
+        
+        const title = tmdbResponse.data.title;
+        const year = tmdbResponse.data.release_date?.split('-')[0] || '';
+        
+        const url = `https://vizinhanca.cc/${title.replace(/ /g, '-').toLowerCase()}-${year}`;
+        
+        return [{
+          url: url,
+          quality: '1080p',
+          type: 'movie',
+          provider: { id: this.id, name: this.name },
+          metadata: {
+            title: title,
+            year: year,
+            note: '✅ Clique para assistir o filme completo!'
+          }
+        }];
+      } catch (e) {
+        return [];
+      }
+    }
+  },
+  {
+    id: 'cinevibe',
+    name: 'CineVibe (Filme Completo)',
+    async getSources(movieId) {
+      try {
+        const tmdbResponse = await axios.get(
+          `https://api.themoviedb.org/3/movie/${movieId}`,
+          {
+            params: {
+              api_key: TMDB_API_KEY
+            }
+          }
+        );
+        
+        const title = tmdbResponse.data.title;
+        const year = tmdbResponse.data.release_date?.split('-')[0] || '';
+        
+        const url = `https://cinevibe.cc/${title.replace(/ /g, '-').toLowerCase()}-${year}`;
+        
+        return [{
+          url: url,
+          quality: '1080p',
+          type: 'movie',
+          provider: { id: this.id, name: this.name },
+          metadata: {
+            title: title,
+            year: year,
+            note: '✅ Clique para assistir o filme completo!'
+          }
+        }];
+      } catch (e) {
+        return [];
+      }
+    }
+  },
+  {
+    id: 'vixsrc',
+    name: 'VixSrc (Filme Completo)',
+    async getSources(movieId) {
+      try {
+        return [{
+          url: `https://vixsrc.net/embed/movie/${movieId}`,
+          quality: '1080p',
+          type: 'embed',
+          provider: { id: this.id, name: this.name },
+          metadata: {
+            note: '✅ Clique para assistir o filme completo!'
+          }
+        }];
+      } catch (e) {
+        return [];
+      }
+    }
+  },
+  {
+    id: 'vidsrc',
+    name: 'VidSrc (Filme Completo)',
+    async getSources(movieId) {
+      try {
+        return [{
+          url: `https://vidsrc.net/embed/movie/${movieId}`,
+          quality: '1080p',
+          type: 'embed',
+          provider: { id: this.id, name: this.name },
+          metadata: {
+            note: '✅ Clique para assistir o filme completo!'
+          }
+        }];
       } catch (e) {
         return [];
       }
@@ -104,11 +269,10 @@ const providers = [
 
 // ============ ENDPOINTS ============
 
-// Health check
 app.get('/', (req, res) => {
   res.json({
     name: 'CinePro',
-    version: '3.0.0',
+    version: '4.0.0',
     status: 'operational',
     tmdb_configured: !!TMDB_API_KEY,
     providers: providers.map(p => p.name),
@@ -127,17 +291,11 @@ app.get('/v1/movies/:id', async (req, res) => {
     const allSources = [];
     const diagnostics = [];
 
-    console.log(`🎬 Buscando filme ID: ${movieId}`);
-
-    // Buscar em todos os provedores
     for (const provider of providers) {
       try {
         const sources = await provider.getSources(movieId);
         if (sources && sources.length > 0) {
           allSources.push(...sources);
-          console.log(`✅ ${provider.name}: ${sources.length} fonte(s)`);
-        } else {
-          console.log(`❌ ${provider.name}: nenhuma fonte`);
         }
       } catch (error) {
         diagnostics.push({
@@ -148,52 +306,12 @@ app.get('/v1/movies/:id', async (req, res) => {
       }
     }
 
-    // Se não encontrou nada, usar TMDB como fallback
-    if (allSources.length === 0 && TMDB_API_KEY) {
-      try {
-        console.log(`🔄 Tentando TMDB como fallback...`);
-        const response = await axios.get(
-          `https://api.themoviedb.org/3/movie/${movieId}`,
-          {
-            params: {
-              api_key: TMDB_API_KEY,
-              language: 'pt-BR'
-            },
-            timeout: 10000
-          }
-        );
-        
-        if (response.data) {
-          allSources.push({
-            url: `https://www.themoviedb.org/movie/${movieId}`,
-            quality: '1080p',
-            type: 'info',
-            provider: { id: 'tmdb_fallback', name: 'TMDB' },
-            metadata: {
-              title: response.data.title,
-              overview: response.data.overview,
-              poster: `https://image.tmdb.org/t/p/w500${response.data.poster_path}`
-            }
-          });
-          console.log(`✅ Fallback TMDB funcionou!`);
-        }
-      } catch (e) {
-        console.error(`❌ Fallback TMDB falhou: ${e.message}`);
-      }
-    }
-
-    // Último recurso
     if (allSources.length === 0) {
       allSources.push({
         url: `https://www.google.com/search?q=assistir+filme+${movieId}`,
         quality: '720p',
         type: 'search',
         provider: { id: 'fallback', name: 'Google Search' }
-      });
-      diagnostics.push({
-        code: 'FALLBACK_MODE',
-        message: 'Nenhum provedor retornou resultados, usando fallback',
-        severity: 'warning'
       });
     }
 
@@ -203,12 +321,10 @@ app.get('/v1/movies/:id', async (req, res) => {
       sources: allSources,
       subtitles: [],
       diagnostics: diagnostics,
-      providers_used: providers.length,
-      tmdb_configured: !!TMDB_API_KEY
+      providers_used: providers.length
     });
 
   } catch (error) {
-    console.error('❌ Erro geral:', error.message);
     res.status(500).json({
       error: 'Erro ao processar requisição',
       message: error.message
@@ -221,10 +337,6 @@ app.get('/v1/search/:query', async (req, res) => {
   try {
     const query = req.params.query;
     
-    if (!TMDB_API_KEY) {
-      return res.status(500).json({ error: 'TMDB_API_KEY não configurada' });
-    }
-    
     const response = await axios.get(
       `https://api.themoviedb.org/3/search/movie`,
       {
@@ -232,8 +344,7 @@ app.get('/v1/search/:query', async (req, res) => {
           api_key: TMDB_API_KEY,
           query: query,
           language: 'pt-BR'
-        },
-        timeout: 10000
+        }
       }
     );
     
@@ -255,14 +366,13 @@ app.get('/v1/search/:query', async (req, res) => {
 app.get('/stremio/manifest.json', (req, res) => {
   res.json({
     id: 'org.cinepro',
-    version: '3.0.0',
+    version: '4.0.0',
     name: 'CinePro',
-    description: 'CinePro - Filmes e Séries com TMDB',
+    description: 'CinePro - Filmes, Trailers e informações',
     resources: ['stream', 'meta'],
     types: ['movie', 'series'],
     catalogs: []
   });
 });
 
-// ============ EXPORT ============
 exports.handler = serverless(app);
