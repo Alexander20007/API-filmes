@@ -10,20 +10,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ============ PROVEDORES QUE FUNCIONAM ============
+// ============ CHAVE TMDB VINDA DO AMBIENTE ============
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
+
+if (!TMDB_API_KEY) {
+  console.error('❌ TMDB_API_KEY não configurada!');
+}
+
+// ============ PROVEDORES ============
 const providers = [
   {
     id: 'tmdb',
     name: 'TMDB',
     async getSources(movieId) {
       try {
-        // Buscar informações do filme no TMDB
-        const tmdbKey = process.env.TMDB_API_KEY || '7a081c3d042790632ab0205086acb4ed';
         const response = await axios.get(
           `https://api.themoviedb.org/3/movie/${movieId}`,
           {
             params: {
-              api_key: tmdbKey,
+              api_key: TMDB_API_KEY,
               append_to_response: 'videos,images'
             }
           }
@@ -31,7 +36,6 @@ const providers = [
         
         if (response.data) {
           const movie = response.data;
-          // Retornar informações do filme
           return [{
             url: `https://www.themoviedb.org/movie/${movieId}`,
             quality: '1080p',
@@ -57,12 +61,11 @@ const providers = [
     name: 'YouTube Trailers',
     async getSources(movieId) {
       try {
-        const tmdbKey = process.env.TMDB_API_KEY || '7a081c3d042790632ab0205086acb4ed';
         const response = await axios.get(
           `https://api.themoviedb.org/3/movie/${movieId}/videos`,
           {
             params: {
-              api_key: tmdbKey
+              api_key: TMDB_API_KEY
             }
           }
         );
@@ -93,7 +96,6 @@ const providers = [
     name: 'JustWatch',
     async getSources(movieId) {
       try {
-        // Buscar onde assistir
         const response = await axios.get(
           `https://apis.justwatch.com/content/titles/movie/${movieId}/locale/pt_BR`,
           {
@@ -115,42 +117,6 @@ const providers = [
             }
           }));
           return offers;
-        }
-        return [];
-      } catch (e) { 
-        return []; 
-      }
-    }
-  },
-  {
-    id: 'omdb',
-    name: 'OMDb',
-    async getSources(movieId) {
-      try {
-        // Usar OMDb API (gratuita)
-        const response = await axios.get(
-          `https://www.omdbapi.com/`,
-          {
-            params: {
-              i: movieId,
-              apikey: 'a1b2c3d4' // OMDb requer chave
-            }
-          }
-        );
-        
-        if (response.data && response.data.Title) {
-          return [{
-            url: `https://www.imdb.com/title/${movieId}/`,
-            quality: '1080p',
-            type: 'info',
-            provider: { id: this.id, name: this.name },
-            metadata: {
-              title: response.data.Title,
-              year: response.data.Year,
-              plot: response.data.Plot,
-              rating: response.data.imdbRating
-            }
-          }];
         }
         return [];
       } catch (e) { 
@@ -184,7 +150,6 @@ app.get('/v1/movies/:id', async (req, res) => {
     const allSources = [];
     const diagnostics = [];
 
-    // Buscar em todos os provedores
     for (const provider of providers) {
       try {
         const sources = await provider.getSources(movieId);
@@ -200,16 +165,13 @@ app.get('/v1/movies/:id', async (req, res) => {
       }
     }
 
-    // Sempre retornar pelo menos informações do TMDB
     if (allSources.length === 0) {
-      // Tentar buscar do TMDB
       try {
-        const tmdbKey = process.env.TMDB_API_KEY || '7a081c3d042790632ab0205086acb4ed';
         const response = await axios.get(
           `https://api.themoviedb.org/3/movie/${movieId}`,
           {
             params: {
-              api_key: tmdbKey
+              api_key: TMDB_API_KEY
             }
           }
         );
@@ -227,7 +189,6 @@ app.get('/v1/movies/:id', async (req, res) => {
           });
         }
       } catch (e) {
-        // Último recurso
         allSources.push({
           url: `https://www.google.com/search?q=assistir+filme+${movieId}`,
           quality: '720p',
@@ -258,13 +219,12 @@ app.get('/v1/movies/:id', async (req, res) => {
 app.get('/v1/search/:query', async (req, res) => {
   try {
     const query = req.params.query;
-    const tmdbKey = process.env.TMDB_API_KEY || '7a081c3d042790632ab0205086acb4ed';
     
     const response = await axios.get(
       `https://api.themoviedb.org/3/search/movie`,
       {
         params: {
-          api_key: tmdbKey,
+          api_key: TMDB_API_KEY,
           query: query,
           language: 'pt-BR'
         }
