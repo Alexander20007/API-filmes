@@ -1,7 +1,7 @@
 {
   "name": "cinepro-core",
   "version": "1.0.0",
-  "description": "OMSS Backend Server - CinePro",
+  "description": "CinePro API com todos os provedores",
   "main": "netlify/functions/api.js",
   "scripts": {
     "build": "echo 'No build needed'",
@@ -10,12 +10,8 @@
     "start": "node netlify/functions/api.js"
   },
   "type": "commonjs",
-  "keywords": ["omss", "cinepro", "movie", "scraper", "api"],
-  "author": "CinePro Team",
-  "license": "MIT",
   "dependencies": {
     "axios": "^1.6.8",
-    "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
