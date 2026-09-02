@@ -1,9 +1,4 @@
-# (Mude rate-limit-flexible para ^2.4.0)
-
-# 2. Enviar para o GitHub
-git add package.json
-git commit -m "Corrige versão do rate-limit-flexible para 2.4.0"
-git push origin main{
+{
   "name": "cinepro-core",
   "version": "1.0.0",
   "description": "OMSS Backend Server - CinePro",
