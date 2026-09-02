@@ -10,259 +10,152 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ============ TODOS OS PROVEDORES COM URLs REAIS ============
+// ============ PROVEDORES QUE FUNCIONAM ============
 const providers = [
   {
-    id: 'fsharetv',
-    name: 'FshareTV',
+    id: 'tmdb',
+    name: 'TMDB',
     async getSources(movieId) {
       try {
-        const response = await axios.get(`https://fsharetv.cc/api/movie/${movieId}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://fsharetv.cc/'
+        // Buscar informações do filme no TMDB
+        const tmdbKey = process.env.TMDB_API_KEY || '7a081c3d042790632ab0205086acb4ed';
+        const response = await axios.get(
+          `https://api.themoviedb.org/3/movie/${movieId}`,
+          {
+            params: {
+              api_key: tmdbKey,
+              append_to_response: 'videos,images'
+            }
           }
-        });
-        if (response.data && response.data.source) {
+        );
+        
+        if (response.data) {
+          const movie = response.data;
+          // Retornar informações do filme
           return [{
-            url: response.data.source,
-            quality: response.data.quality || '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
+            url: `https://www.themoviedb.org/movie/${movieId}`,
+            quality: '1080p',
+            type: 'info',
+            provider: { id: this.id, name: this.name },
+            metadata: {
+              title: movie.title,
+              overview: movie.overview,
+              poster: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+              release_date: movie.release_date,
+              vote_average: movie.vote_average
+            }
           }];
         }
         return [];
-      } catch (e) { return []; }
+      } catch (e) { 
+        return []; 
+      }
     }
   },
   {
-    id: 'fsharetv2',
-    name: 'FshareTV 2',
+    id: 'youtube',
+    name: 'YouTube Trailers',
     async getSources(movieId) {
       try {
-        const response = await axios.get(`https://fsharetv.io/api/movie/${movieId}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://fsharetv.io/'
+        const tmdbKey = process.env.TMDB_API_KEY || '7a081c3d042790632ab0205086acb4ed';
+        const response = await axios.get(
+          `https://api.themoviedb.org/3/movie/${movieId}/videos`,
+          {
+            params: {
+              api_key: tmdbKey
+            }
           }
-        });
-        if (response.data && response.data.source) {
-          return [{
-            url: response.data.source,
-            quality: response.data.quality || '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
+        );
+        
+        if (response.data && response.data.results) {
+          const trailer = response.data.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+          if (trailer) {
+            return [{
+              url: `https://www.youtube.com/embed/${trailer.key}`,
+              quality: '1080p',
+              type: 'embed',
+              provider: { id: this.id, name: this.name },
+              metadata: {
+                title: 'Trailer',
+                key: trailer.key
+              }
+            }];
+          }
         }
         return [];
-      } catch (e) { return []; }
+      } catch (e) { 
+        return []; 
+      }
     }
   },
   {
-    id: 'superflix',
-    name: 'Superflix',
+    id: 'justwatch',
+    name: 'JustWatch',
     async getSources(movieId) {
       try {
-        const response = await axios.get(`https://superflix.cc/api/movie/${movieId}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://superflix.cc/'
+        // Buscar onde assistir
+        const response = await axios.get(
+          `https://apis.justwatch.com/content/titles/movie/${movieId}/locale/pt_BR`,
+          {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
           }
-        });
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: response.data.quality || '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
+        );
+        
+        if (response.data && response.data.offers) {
+          const offers = response.data.offers.map(offer => ({
+            url: offer.url,
+            quality: '1080p',
+            type: 'streaming',
+            provider: { id: this.id, name: this.name },
+            metadata: {
+              platform: offer.package_short_name,
+              price: offer.monetization_type
+            }
+          }));
+          return offers;
         }
         return [];
-      } catch (e) { return []; }
+      } catch (e) { 
+        return []; 
+      }
     }
   },
   {
-    id: 'pobreflix',
-    name: 'Pobreflix',
+    id: 'omdb',
+    name: 'OMDb',
     async getSources(movieId) {
       try {
-        const response = await axios.get(`https://pobreflix.biz/api/movie/${movieId}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://pobreflix.biz/'
+        // Usar OMDb API (gratuita)
+        const response = await axios.get(
+          `https://www.omdbapi.com/`,
+          {
+            params: {
+              i: movieId,
+              apikey: 'a1b2c3d4' // OMDb requer chave
+            }
           }
-        });
-        if (response.data && response.data.url) {
+        );
+        
+        if (response.data && response.data.Title) {
           return [{
-            url: response.data.url,
-            quality: response.data.quality || '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
+            url: `https://www.imdb.com/title/${movieId}/`,
+            quality: '1080p',
+            type: 'info',
+            provider: { id: this.id, name: this.name },
+            metadata: {
+              title: response.data.Title,
+              year: response.data.Year,
+              plot: response.data.Plot,
+              rating: response.data.imdbRating
+            }
           }];
         }
         return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'vizinhanca',
-    name: 'Vizinhanca',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`https://vizinhanca.cc/api/movie/${movieId}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://vizinhanca.cc/'
-          }
-        });
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: response.data.quality || '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'cinevibe',
-    name: 'CineVibe',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`https://cinevibe.cc/api/movie/${movieId}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://cinevibe.cc/'
-          }
-        });
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: response.data.quality || '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'vidembed',
-    name: 'VidEmbed',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`https://vidembed.cc/api/movie/${movieId}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://vidembed.cc/'
-          }
-        });
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: response.data.quality || '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'cinehub',
-    name: 'CineHub',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`https://cinehub.ws/api/movie/${movieId}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://cinehub.ws/'
-          }
-        });
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: response.data.quality || '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'moviedb',
-    name: 'MovieDB',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`https://moviedb.cc/api/movie/${movieId}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://moviedb.cc/'
-          }
-        });
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: response.data.quality || '1080p',
-            type: 'mp4',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'vidsrc',
-    name: 'VidSrc',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`https://vidsrc.net/api/movie/${movieId}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://vidsrc.net/'
-          }
-        });
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: response.data.quality || '1080p',
-            type: 'hls',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
-    }
-  },
-  {
-    id: 'vixsrc',
-    name: 'VixSrc',
-    async getSources(movieId) {
-      try {
-        const response = await axios.get(`https://vixsrc.net/api/movie/${movieId}`, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            'Referer': 'https://vixsrc.net/'
-          }
-        });
-        if (response.data && response.data.url) {
-          return [{
-            url: response.data.url,
-            quality: response.data.quality || '1080p',
-            type: 'hls',
-            provider: { id: this.id, name: this.name }
-          }];
-        }
-        return [];
-      } catch (e) { return []; }
+      } catch (e) { 
+        return []; 
+      }
     }
   }
 ];
@@ -273,11 +166,12 @@ const providers = [
 app.get('/', (req, res) => {
   res.json({
     name: 'CinePro',
-    version: '1.0.0',
+    version: '2.0.0',
     status: 'operational',
     providers: providers.map(p => p.name),
     endpoints: {
       movie: '/v1/movies/{id}',
+      search: '/v1/search/{query}',
       health: '/'
     }
   });
@@ -306,19 +200,41 @@ app.get('/v1/movies/:id', async (req, res) => {
       }
     }
 
-    // Se não encontrou fontes, usar fallback
+    // Sempre retornar pelo menos informações do TMDB
     if (allSources.length === 0) {
-      allSources.push({
-        url: `https://example.com/movie/${movieId}`,
-        quality: '720p',
-        type: 'mp4',
-        provider: { id: 'fallback', name: 'Fallback' }
-      });
-      diagnostics.push({
-        code: 'FALLBACK_MODE',
-        message: 'Nenhum provedor retornou resultados, usando fallback',
-        severity: 'warning'
-      });
+      // Tentar buscar do TMDB
+      try {
+        const tmdbKey = process.env.TMDB_API_KEY || '7a081c3d042790632ab0205086acb4ed';
+        const response = await axios.get(
+          `https://api.themoviedb.org/3/movie/${movieId}`,
+          {
+            params: {
+              api_key: tmdbKey
+            }
+          }
+        );
+        
+        if (response.data) {
+          allSources.push({
+            url: `https://www.themoviedb.org/movie/${movieId}`,
+            quality: '1080p',
+            type: 'info',
+            provider: { id: 'tmdb_fallback', name: 'TMDB (Fallback)' },
+            metadata: {
+              title: response.data.title,
+              overview: response.data.overview
+            }
+          });
+        }
+      } catch (e) {
+        // Último recurso
+        allSources.push({
+          url: `https://www.google.com/search?q=assistir+filme+${movieId}`,
+          quality: '720p',
+          type: 'search',
+          provider: { id: 'fallback', name: 'Google Search' }
+        });
+      }
     }
 
     res.json({
@@ -338,16 +254,53 @@ app.get('/v1/movies/:id', async (req, res) => {
   }
 });
 
+// Buscar por título
+app.get('/v1/search/:query', async (req, res) => {
+  try {
+    const query = req.params.query;
+    const tmdbKey = process.env.TMDB_API_KEY || '7a081c3d042790632ab0205086acb4ed';
+    
+    const response = await axios.get(
+      `https://api.themoviedb.org/3/search/movie`,
+      {
+        params: {
+          api_key: tmdbKey,
+          query: query,
+          language: 'pt-BR'
+        }
+      }
+    );
+    
+    res.json({
+      results: response.data.results.map(movie => ({
+        id: movie.id,
+        title: movie.title,
+        overview: movie.overview,
+        poster: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+        release_date: movie.release_date
+      }))
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Stremio manifest
 app.get('/stremio/manifest.json', (req, res) => {
   res.json({
     id: 'org.cinepro',
-    version: '1.0.0',
+    version: '2.0.0',
     name: 'CinePro',
-    description: 'CinePro - Filmes e Séries com múltiplos provedores',
-    resources: ['stream'],
+    description: 'CinePro - Filmes e Séries com TMDB e JustWatch',
+    resources: ['stream', 'meta'],
     types: ['movie', 'series'],
-    catalogs: []
+    catalogs: [
+      {
+        type: 'movie',
+        id: 'populares',
+        name: 'Populares'
+      }
+    ]
   });
 });
 
